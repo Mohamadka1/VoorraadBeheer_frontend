@@ -1,9 +1,11 @@
 // Plugins
+import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import Fonts from 'unplugin-fonts/vite'
+import Layouts from 'vite-plugin-vue-layouts'
 import Vue from '@vitejs/plugin-vue'
-import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import ViteFonts from 'unplugin-fonts/vite'
 import VueRouter from 'unplugin-vue-router/vite'
+import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 // Utilities
 import { defineConfig } from 'vite'
@@ -12,9 +14,28 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    VueRouter(),
+    VueRouter({
+      dts: 'src/typed-router.d.ts',
+    }),
+    Layouts(),
+    AutoImport({
+      imports: [
+        'vue',
+        {
+          'vue-router/auto': ['useRoute', 'useRouter'],
+        }
+      ],
+      dts: 'src/auto-imports.d.ts',
+      eslintrc: {
+        enabled: true,
+      },
+      vueTemplate: true,
+    }),
+    Components({
+      dts: 'src/components.d.ts',
+    }),
     Vue({
-      template: { transformAssetUrls }
+      template: { transformAssetUrls },
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
@@ -23,10 +44,9 @@ export default defineConfig({
         configFile: 'src/styles/settings.scss',
       },
     }),
-    Components(),
-    ViteFonts({
+    Fonts({
       google: {
-        families: [{
+        families: [ {
           name: 'Roboto',
           styles: 'wght@100;300;400;500;700;900',
         }],
@@ -36,7 +56,7 @@ export default defineConfig({
   define: { 'process.env': {} },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
     extensions: [
       '.js',
